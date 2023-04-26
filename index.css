@@ -1,0 +1,21 @@
+body {
+    margin: 0;
+    padding: 0;
+   
+}
+
+div[data-type="cell"]{
+    border-radius: 50%;
+    text-align: center;
+    width: 8px;
+    height: 8px;
+    font-size: 10px;
+    border: 1px solid plum;
+    cursor: pointer;
+}
+div[data-type="cell"][data-value="1"]{
+    background-color: red;
+}
+div[data-type="cell"][data-value="0"]{
+    background-color: transparent;
+}
