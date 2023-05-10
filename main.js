@@ -5,21 +5,38 @@ class Cell {
         this.id = id;
         this.cell = document.createElement("div");
     }
-    static isCell(id) {
-        return Cell.get(id).dataset.type === "cell";
+    static isCell(cells, id) {
+        const el = Cell.get(cells, id);
+        return el ? el.dataset.type === "cell" : false;
     }
     static destructId(id) {
         const [rowIndex, colIndex] = id.split("-");
         return [+rowIndex, +colIndex];
     }
-    static get(id) {
-        return document.getElementById(id);
+    static get(cells, id) {
+        let item = null;
+        const length = cells.length;
+        for (let i = 0; i < length; i++) {
+            if (cells[i].id === id) {
+                item = cells[i];
+                break;
+            } else {
+                continue;
+            }
+        }
+        return item;
     }
-    static active(id) {
-        Cell.get(id).setAttribute("data-value", 1);
+    static active(cells, id) {
+        const el = Cell.get(cells, id);
+        if (el) {
+            el.setAttribute("data-value", 1);
+        }
     }
-    static deactive(id) {
-        Cell.get(id).setAttribute("data-value", 0);
+    static deactive(cells, id) {
+        const el = Cell.get(cells, id);
+        if (el) {
+            el.setAttribute("data-value", 0);
+        }
     }
     create() {
         this.cell.setAttribute("data-type", "cell");
@@ -35,6 +52,7 @@ class Field {
     nextMatrix = [];
     containerId;
     requestTimeout;
+    cells = [];
     constructor(size, containerId) {
         this.size = size;
         this.containerId = containerId;
@@ -60,6 +78,7 @@ class Field {
                 container.appendChild(element);
             }
         }
+        this.cells = container.children;
     }
 
     computeMatrix() {
@@ -108,28 +127,28 @@ class Field {
         if (this.matrix[rowIndex][colIndex] === 1) {
             if (neighbours < 2) {
                 this.nextMatrix[rowIndex][colIndex] = 0;
-                Cell.deactive(id);
+                Cell.deactive(this.cells, id);
             } else if (neighbours === 2 || neighbours === 3) {
                 this.nextMatrix[rowIndex][colIndex] = 1;
-                Cell.active(id);
+                Cell.active(this.cells, id);
             } else if (neighbours > 3) {
                 this.nextMatrix[rowIndex][colIndex] = 0;
-                Cell.deactive(id);
+                Cell.deactive(this.cells, id);
             }
         } else if (this.matrix[rowIndex][colIndex] === 0) {
             if (neighbours === 3) {
                 this.nextMatrix[rowIndex][colIndex] = 1;
-                Cell.active(id);
+                Cell.active(this.cells, id);
             }
         }
     }
 
     initialize(e) {
         e.stopPropagation();
-        if (Cell.isCell(e.target.id)) {
+        if (Cell.isCell(this.cells, e.target.id)) {
             const [rowIndex, colIndex] = Cell.destructId(e.target.id);
             this.matrix[rowIndex][colIndex] = 1;
-            Cell.active(e.target.id);
+            Cell.active(this.cells, e.target.id);
         }
     }
     containerEvents(container) {
@@ -137,7 +156,7 @@ class Field {
     }
 
     install() {
-        const container = document.querySelector(this.containerId);
+        const container = document.getElementById(this.containerId);
         container.setAttribute("data-type", "container");
         container.style.display = "grid";
         container.style.gridTemplateColumns = `repeat(${this.size}, min-content)`;
@@ -177,7 +196,7 @@ class Field {
 }
 
 function main() {
-    const field = new Field(100, "#app");
+    const field = new Field(100, "app");
 
     field.install();
 
